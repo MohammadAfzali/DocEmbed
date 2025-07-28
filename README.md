@@ -179,16 +179,6 @@ RabbitMQ is accessible at `rabbitmq.qdrant.svc.cluster.local:5672`.
    kubectl apply -f celery-embed-worker-deployment.yaml
    ```
 
-4. **Check Worker Status**:
-
-   ```bash
-   kubectl get deployments -n qdrant
-   kubectl get pods -n qdrant -l app=celery-pdf-worker
-   kubectl get pods -n qdrant -l app=celery-embed-worker
-   kubectl logs -n qdrant -l app=celery-pdf-worker --tail=100
-   kubectl logs -n qdrant -l app=celery-embed-worker --tail=100
-   ```
-
 ### Deploy Query Service
 
 Deploy the query service and its associated Kubernetes service:
@@ -196,14 +186,6 @@ Deploy the query service and its associated Kubernetes service:
 ```bash
 kubectl apply -f query-service-deployment.yaml
 kubectl apply -f query-service-service.yaml
-```
-
-Check status:
-
-```bash
-kubectl get deployments -n qdrant -l app=query-service
-kubectl get services -n qdrant -l app=query-service
-kubectl describe svc query-service -n qdrant
 ```
 
 ### Deploy UI Service
@@ -215,23 +197,6 @@ kubectl apply -f ui-service-deployment.yaml
 kubectl apply -f ui-service-service.yaml
 ```
 
-Check status and get the external URL:
-
-```bash
-kubectl get deployments -n qdrant -l app=ui-service
-kubectl get services -n qdrant -l app=ui-service
-kubectl get svc ui-service -n qdrant -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-kubectl describe svc ui-service -n qdrant
-```
-
-Inspect the UI container:
-
-```bash
-docker run -it 705926388196.dkr.ecr.us-east-2.amazonaws.com/ui-service:latest sh
-ls -R /usr/share/nginx/html
-cat /etc/nginx/conf.d/default.conf
-```
-
 ### Run Scheduler
 
 Deploy a CronJob to trigger periodic tasks:
@@ -240,13 +205,6 @@ Deploy a CronJob to trigger periodic tasks:
 kubectl apply -f celery-pdf-trigger-cronjob.yaml
 ```
 
-Check status:
-
-```bash
-kubectl get cronjobs -n qdrant
-kubectl get jobs -n qdrant
-kubectl logs -n qdrant -l job-name=celery-pdf-trigger
-```
 
 ## Building and Pushing Docker Images
 
@@ -261,7 +219,7 @@ docker push 705926388196.dkr.ecr.us-east-2.amazonaws.com/qdrant-client:latest
 kubectl apply -f qdrant-client-deployment.yaml
 ```
 
-Check status:
+### Check status:
 
 ```bash
 kubectl get deployments -n qdrant
@@ -273,6 +231,7 @@ kubectl get pods -n qdrant -l app=qdrant-test-app --field-selector=status.phase!
 ### Celery PDF Worker
 
 ```bash
+cd publisher
 aws ecr create-repository --repository-name celery-pdf-worker --region us-east-2
 docker build -t celery-pdf-worker .
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 705926388196.dkr.ecr.us-east-2.amazonaws.com
@@ -283,6 +242,7 @@ docker push 705926388196.dkr.ecr.us-east-2.amazonaws.com/celery-pdf-worker:lates
 ### Celery Embed Worker
 
 ```bash
+cd consumer
 aws ecr create-repository --repository-name celery-embed-worker --region us-east-2
 docker build --no-cache -t celery-embed-worker -f Dockerfile .
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 705926388196.dkr.ecr.us-east-2.amazonaws.com
@@ -293,6 +253,7 @@ docker push 705926388196.dkr.ecr.us-east-2.amazonaws.com/celery-embed-worker:lat
 ### Query Service
 
 ```bash
+cd query-engine
 docker build --no-cache -t query-service -f Dockerfile .
 aws ecr create-repository --repository-name query-service --region us-east-2
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 705926388196.dkr.ecr.us-east-2.amazonaws.com
@@ -303,38 +264,10 @@ docker push 705926388196.dkr.ecr.us-east-2.amazonaws.com/query-service:latest
 ### UI Service
 
 ```bash
+cd ui
 docker build --no-cache -t ui-service -f Dockerfile .
 aws ecr create-repository --repository-name ui-service --region us-east-2
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 705926388196.dkr.ecr.us-east-2.amazonaws.com
 docker tag ui-service:latest 705926388196.dkr.ecr.us-east-2.amazonaws.com/ui-service:latest
 docker push 705926388196.dkr.ecr.us-east-2.amazonaws.com/ui-service:latest
 ```
-
-Debugging Commands
-
-- Delete EKS cluster:
-
-  eksctl delete cluster --name doc-embed --region us-east-2
-
-- Check Qdrant data:
-
-  kubectl port-forward svc/qdrant -n qdrant 6333:6333\\
-
-  curl http://localhost:6333/collections/test_collection/points?filter={"must":\[{"key":"doc_id","match":{"value":"test_file"}}\]}\
-  curl -X POST http://localhost:6333/collections/test_collection/points/scroll -H 'Content-Type: application/json' -d '{"limit": 100, "with_payload": true}'
-
-- Check deployment and pod status:
-
-  kubectl get deployments -n qdrant\\
-
-  kubectl get pods -n qdrant\
-  kubectl describe deployment celery-pdf-worker -n qdrant
-
-Usage
-
-1. Upload PDF documents via the UI or trigger the CronJob to process files from an S3 bucket.
-2. The Celery PDF worker processes PDFs and sends tasks to the embed worker.
-3. The embed worker generates embeddings and stores them in Qdrant.
-4. Query embeddings using the query service API or UI.
-5. Use the UI to visualize results or interact with the system.
-
