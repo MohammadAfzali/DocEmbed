@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-service
+  namespace: qdrant
+  labels:
+    app: ui-service
+spec:
+  selector:
+    app: ui-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer

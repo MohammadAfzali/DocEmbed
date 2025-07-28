@@ -1,0 +1,24 @@
+replicaCount: 1
+image:
+  registry: docker.io
+  repository: bitnami/rabbitmq
+  tag: 3.12
+auth:
+  username: guest
+  password: guest
+service:
+  type: ClusterIP
+  port: 5672
+persistence:
+  enabled: true
+  storageClass: "ebs-sc"
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "200m"
+    memory: "512Mi"

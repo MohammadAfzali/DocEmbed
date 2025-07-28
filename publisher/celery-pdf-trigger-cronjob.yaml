@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: celery-pdf-trigger-cron
+  namespace: qdrant
+spec:
+  schedule: "* * * * *"  # Run every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: celery-pdf-worker
+          containers:
+            - name: celery-pdf-trigger
+              image: 705926388196.dkr.ecr.us-east-2.amazonaws.com/celery-pdf-worker:latest
+              command: ["python", "celery_app.py"]
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "1024Mi"
+              env:
+                - name: PYTHONUNBUFFERED
+                  value: "1"
+          restartPolicy: Never

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-embed-worker
+  namespace: qdrant
+  labels:
+    app: celery-embed-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-embed-worker
+  template:
+    metadata:
+      labels:
+        app: celery-embed-worker
+    spec:
+      serviceAccountName: celery-pdf-worker
+      containers:
+        - name: celery-embed-worker
+          image: 705926388196.dkr.ecr.us-east-2.amazonaws.com/celery-embed-worker:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"

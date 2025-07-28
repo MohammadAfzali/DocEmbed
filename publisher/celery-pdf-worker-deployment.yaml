@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-pdf-worker
+  namespace: qdrant
+  labels:
+    app: celery-pdf-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-pdf-worker
+  template:
+    metadata:
+      labels:
+        app: celery-pdf-worker
+    spec:
+      serviceAccountName: celery-pdf-worker
+      containers:
+        - name: celery-pdf-worker
+          image: 705926388196.dkr.ecr.us-east-2.amazonaws.com/celery-pdf-worker:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"

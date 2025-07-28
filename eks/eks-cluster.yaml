@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: doc-embed
+  region: us-east-2
+  version: "1.33"
+managedNodeGroups:
+  - name: ng-2  # New node group
+    instanceType: m7i-flex.large  # Free Tier-eligible, 8GB memory
+    minSize: 2
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    volumeType: gp3
+    privateNetworking: true
+    updateConfig:
+      maxUnavailable: 1
+iam:
+  withOIDC: true
+addons:
+  - name: aws-ebs-csi-driver
+    wellKnownPolicies:
+      ebsCSIController: true

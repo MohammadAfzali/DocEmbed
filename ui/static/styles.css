@@ -1,0 +1,15 @@
+body {
+    background-color: #f8f9fa;
+}
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.result-card {
+    margin-bottom: 1rem;
+    border-left: 5px solid #007bff;
+}
+.result-card .card-header {
+    background-color: #e9ecef;
+    font-weight: bold;
+}

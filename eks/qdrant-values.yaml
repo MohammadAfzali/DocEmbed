@@ -1,0 +1,22 @@
+replicaCount: 1
+image:
+  repository: qdrant/qdrant
+  tag: "v1.11.0"  # Updated to a valid semantic version
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  httpPort: 6333
+  grpcPort: 6334
+persistence:
+  enabled: true
+  storageClass: "ebs-sc"
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "1000m"
+    memory: "4Gi"
