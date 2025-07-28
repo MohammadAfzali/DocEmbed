@@ -32,6 +32,7 @@ The architecture is highly cost-efficient, leveraging a cloud-agnostic stack tha
 #### TODO
  - Refactor and clean the codebase; eliminate all hardcoded configuration values.
  - Integrate system monitoring using Prometheus and Grafana for better observability and operational insight.
+ - Add Tests and setup CI/CD pipelines.
 
 ## Table of Contents
 
